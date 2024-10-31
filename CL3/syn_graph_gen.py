@@ -41,7 +41,7 @@ def generate_graph_with_custom_degree_distribution(n, degree_choices):
     :param degree_choices: List of possible degrees (neighbor sizes).
     :return: A graph with nodes having random degrees from degree_choices.
     """
-    G = nx.DiGraph()
+    G = nx.Graph()
     G.add_nodes_from(range(n))  # Add n nodes
     
     # Assign each node a random degree from the predefined list
@@ -160,8 +160,8 @@ def iso(sample_id, n, p, dir_path):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
-    # Step 1: Generate a random directed graph G
-    G = nx.gnp_random_graph(n, p, directed=True)
+    # Step 1: Generate a random undirected graph G
+    G = nx.erdos_renyi_graph(n, p)
 
     # Step 2: Generate a random permutation of the nodes
     nodes = list(G.nodes())
@@ -187,14 +187,13 @@ def iso(sample_id, n, p, dir_path):
     else:
         print(f"Graphs are not isomorphic for sample {sample_id}")
 
-n = 10
+n = 100
 
-num_pair_1 = 30
+num_pair_1 = 400
 num_pair = [i for i in range(num_pair_1)]
-path_dir = f'/home/cds/Documents/canonical_labeling/data/self_generated_data/n{n}_{num_pair_1}_predefined'
+path_dir = f'/home/cds2/Yifan/canonical_labeling/data/self_generated_data/n{n}_{num_pair_1}'
 p = 0.2
 
-generate_multiple_non_isomorphic_graph_pairs(num_pair, n, p, path_dir)
 
 def worker(sample_id):
     try:
@@ -202,7 +201,7 @@ def worker(sample_id):
     except Exception as e:
         print(f"Error in worker with sample_id {sample_id}: {e}")
 
-with multiprocessing.Pool(processes=10) as pool:
+with multiprocessing.Pool(processes=100) as pool:
     pool.map(worker, num_pair, chunksize=1)
     pool.close()
     pool.join()
@@ -213,7 +212,7 @@ def worker(sample_id):
     a = iso(sample_id, n, p, path_dir)
 
 
-with multiprocessing.Pool(processes=10) as pool:
+with multiprocessing.Pool(processes=100) as pool:
     pool.map(worker, num_pair, chunksize=1)
     pool.close()
     pool.join()

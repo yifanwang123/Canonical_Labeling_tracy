@@ -717,7 +717,7 @@ def find_one_leaf(current_node, indi_node, node_invariant, graph, traces, seen_n
 
 
 def refine_partition(graph, partition, node_invariant, seen_codes, record_file):
-    print('======================================================')
+    # print('======================================================')
     n = len((partition.cls))
     schreier_sims = SchreierSims(n)
     # print(schreier_sims.current_partition)

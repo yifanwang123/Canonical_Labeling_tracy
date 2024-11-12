@@ -291,7 +291,7 @@ class LabeledGraph:
         if dataset == 'self_generated_data' or dataset == 'EXP_dataset':
             self.graph, self.num_nodes = self.read_from_file(matrix_file)
         else:
-            if dataset == 'benchmark1':
+            if dataset == 'benchmark1_false' or dataset == 'benchmark1_true':
                 self.graph, self.num_nodes = self.read_from_file1(matrix_file)
             else:
                 self.graph, self.num_nodes = self.read_from_file2(matrix_file)

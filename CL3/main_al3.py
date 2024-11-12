@@ -196,11 +196,17 @@ def check_iso(form1, form2, graph1, graph2, data=None):
             dt_2[num_neighbors_2] += 1
         
     if dt_1 != dt_2:    
-        # print(f"Not iso")
-        # sys.exit()
         iso = False
+    
+    if data == 'benchmark1_true':
+        iso = True
+    
     if data == 'EXP_dataset':
         iso = False
+
+    if data == 'benchmark1_false':
+        iso = False
+
 
     if iso:
         # sys.exit()
@@ -267,13 +273,13 @@ def traces(graph_file, options, stats, idx, dataset=None):
     # record = graph_file+'_record.txt'
     if dataset == 'self_generated_data' or dataset == 'EXP_dataset':
         record = graph_file.replace('.npy', '_record.txt')
-    if dataset == 'benchmark1':
+    if dataset == 'benchmark1_true' or dataset == 'benchmark1_false':
         record = graph_file +'_record.txt'
     # print(record)
     root, leaves, generators = refine_partition(graph, vars.partition, vars.node_invariant, vars.seen_codes, record)
     
-    draw_search_tree(root, idx=idx)
-    print(f'number of leaves: {len(leaves)}')
+    # draw_search_tree(root, idx=idx)
+    # print(f'number of leaves: {len(leaves)}')
     
     # stand = leaves[0].invariant
     # for leave in leaves[1:]:
@@ -286,8 +292,8 @@ def traces(graph_file, options, stats, idx, dataset=None):
     if not root:
         return None
     vars.canonical_form = compute_canonical_form(vars.graph, leaves)
-    print('Final')
-    print(vars.canonical_form)
+    # print('Final')
+    # print(vars.canonical_form)
     f = open(record, "a")
     f.write(str(vars.canonical_form)+'\n')
     duration = time.time() - time_start
@@ -438,7 +444,7 @@ class main_run:
         return file_path
 
     def modify_filename_with_path(self, file_path):
-        if self.dataset == 'benchmark1':
+        if self.dataset == 'benchmark1_true' or self.dataset == 'benchmark1_false':
             path_parts = file_path.rsplit('/', 1)
             if len(path_parts) == 2:
                 modified_filename = self.modify_filename(path_parts[1])
@@ -476,9 +482,9 @@ class main_run:
 
         idx = 3
         form, graph = self.one_graph_run(next_file_path, idx)
-        if dataset == 'self_generated_data' or dataset == 'EXP_dataset':
+        if self.dataset == 'self_generated_data' or self.dataset == 'EXP_dataset':
             record = next_file_path.replace('.npy', '_record.txt')
-        if dataset == 'benchmark1':
+        if self.dataset == 'benchmark1_true' or self.dataset == 'benchmark1_false':
             record = next_file_path +'_record.txt'
         
 
@@ -486,12 +492,12 @@ class main_run:
 
 
         f = open(record, "a")
-        success, iso = check_iso(current_form, form, current_graph, graph, data=dataset)
+        success, iso = check_iso(current_form, form, current_graph, graph, data=self.dataset)
 
 
         if not success:
-            print(f'Error, iso: {iso}')
-            f.write('Error')
+            print(f'Fail, iso: {iso}')
+            f.write(f'Fail! iso: {iso}')
             # print(current_form)
             # print(form)
             current_label = {}
@@ -501,9 +507,6 @@ class main_run:
                 label[i] = form[i]
             
             # draw_two_graphs(current_graph, graph, current_label, label)
-
-
-            
             return False
         
         current_label = {}
@@ -578,10 +581,10 @@ class main_run:
 
 # dataset = 'EXP_dataset'
 # directory = f'/home/cds/Yifan/canonical_labeling/data/{dataset}/CEXP'
-# dataset = 'benchmark1'
-# directory = f'/home/cds/Yifan/canonical_labeling/data/{dataset}/cfi-rigid-r2'
-dataset = 'benchmark1'
-directory = '/home/cds2/Yifan/canonical_labeling/data/benchmark1/cfi-rigid-t2_2'
+dataset = 'benchmark1_false'
+directory = f'/home/cds2/Yifan/canonical_labeling/data/benchmark1/cfi-rigid-z2_2'
+# dataset = 'self_generated_data'
+# directory = '/home/cds2/Yifan/canonical_labeling/data/self_generated_data/n100_400'
 
 
 
@@ -603,7 +606,7 @@ if dataset == 'self_generated_data':
         a = run.true_iso_graphs_run(file_name)
 
 
-    with multiprocessing.Pool(processes=40) as pool:
+    with multiprocessing.Pool(processes=60) as pool:
         pool.map(worker, filename_dir, chunksize=1)
     
     
@@ -639,7 +642,7 @@ if dataset == 'EXP_dataset':
 
 
 
-if dataset == 'benchmark1':
+if dataset == 'benchmark1_true':
     filename_dir = []
     for filename in sorted(os.listdir(directory)):
         if filename.endswith("-1"):
@@ -647,6 +650,24 @@ if dataset == 'benchmark1':
             # print(full_path)
             filename_dir.append(full_path)
 
+    def worker(file_name):
+        a = run.true_iso_graphs_run(file_name)
+
+
+    with multiprocessing.Pool(processes=100) as pool:
+        pool.map(worker, filename_dir, chunksize=1)
+
+
+
+if dataset == 'benchmark1_false':
+    filename_dir = []
+    for filename in sorted(os.listdir(directory)):
+        if filename.endswith("-1"):
+            full_path = os.path.join(directory, filename)
+            # print(full_path)
+            filename_dir.append(full_path)
+
+    print(len(filename_dir))
     def worker(file_name):
         a = run.true_iso_graphs_run(file_name)
 
